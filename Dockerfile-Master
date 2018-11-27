@@ -1,18 +1,17 @@
 # Use Java 8 slim JRE
-FROM alpine:latest
+FROM ubuntu:latest
 
 # JMeter version
 ARG JMETER_VERSION=3.3
 
 # Install few utilities
-RUN apk update && \
-    apk add ca-certificates && \
-    update-ca-certificates && \
-    apk add \
-        wget \
-        telnet \
-        iputils-ping \
-        unzip
+RUN apt-get clean && \
+    apt-get update && \
+    apt-get -qy install \
+                wget \
+                telnet \
+                iputils-ping \
+                unzip
 
 # Install JMeter
 WORKDIR /jmeter
