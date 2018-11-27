@@ -42,6 +42,6 @@ ENV PATH $JMETER_HOME/bin:$PATH
 
 EXPOSE 1099 50000
 
-ENTRYPOINT jmeter-server \
+ENTRYPOINT $JMETER_HOME/bin/jmeter-server \
 -Dserver.rmi.localport=50000 \
 -Dserver_port=1099

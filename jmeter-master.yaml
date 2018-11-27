@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: jmmaster
-          image: gcr.io/develop-220504/jmeter/master
+          image: gcr.io/develop-220504/jmeter:master
           command: [ "/bin/bash", "-c", "--" ]
           args: [ "while true; do sleep 30; done;" ]
           volumeMounts:

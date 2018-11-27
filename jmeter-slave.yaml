@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: jmslave
-          image: gcr.io/develop-220504/jmeter/slave
+          image: gcr.io/develop-220504/jmeter:slave
           ports:
             - containerPort: 1099
             - containerPort: 50000
