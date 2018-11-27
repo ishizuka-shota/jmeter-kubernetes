@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jmeter-master-dep
+  namespace: jmmaster
+  labels:
+    jmeter_mode: master
+spec:
+  selector:
+    matchLabels:
+      jmeter_mode: master
+  replicas: 1
+  template:
+    metadata:
+      namespace: jmmaster
+      labels:
+        jmeter_mode: master
+    spec:
+      containers:
+        - name: jmmaster
+          image: gcr.io/develop-220504/jmeter/master
+          command: [ "/bin/bash", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]
+          volumeMounts:
+            - name: loadtest
+              mountPath: /load_test
+              subPath: "load_test" 
+          ports:
+            - containerPort: 60000
+      volumes:
+        - name: loadtest
+          configMap:
+            name: jmeter-load-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-slaves-svc
+  namespace: jmmaster
+  labels:
+    jmeter_mode: slave
+spec:
+  clusterIP: None
+  ports:
+    - port: 1099
+      name: server
+      targetPort: 1099
+    - port: 50000
+      name: local
+      targetPort: 50000
+  selector:
+    jmeter_mode: slave
