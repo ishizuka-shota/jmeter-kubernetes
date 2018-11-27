@@ -6,6 +6,8 @@ ARG JMETER_VERSION=3.3
 
 # Install few utilities
 RUN apk update && \
+    apk add ca-certificates && \
+    update-ca-certificates && \
     apk add \
         wget \
         telnet \
@@ -17,7 +19,6 @@ WORKDIR /jmeter
 RUN wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$JMETER_VERSION.tgz \
     && tar -xzf apache-jmeter-$JMETER_VERSION.tgz \
     && rm apache-jmeter-$JMETER_VERSION.tgz
-
 
 
 
