@@ -1,5 +1,5 @@
-# Use Java 8 slim JRE
-FROM ubuntu:latest
+# Use Ubuntu
+FROM ubuntu:latest as builder
 
 # JMeter version
 ARG JMETER_VERSION=3.3
@@ -21,7 +21,7 @@ RUN wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$JMETER_V
 
 
 
-# COPY the server file to image from builder
+# COPY the server file to image from builder (Use Java 8 alpine JRE)
 FROM openjdk:8-jre-alpine
 
 RUN apk update && \
