@@ -1,0 +1,14 @@
+timeout: 3600s
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["build", "-t", "gcr.io/$PROJECT_ID/jmeter:slave", "./Dockerfile-Slave"]
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["build", "-t", "gcr.io/$PROJECT_ID/jmeter:master", "./Dockerfile-Master"]
+images: ["gcr.io/$PROJECT_ID/jmeter:slave"]
+images: ["gcr.io/$PROJECT_ID/jmeter:master"]
+
+steps:
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ["apply", "-f", "jmeter-slave.yaml"]
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ["apply", "-f", "jmeter-master.yaml"]
