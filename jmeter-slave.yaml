@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: jmslave
-          image: gcr.io/develop-220504/jmeter:slave
+          image: gcr.io/develop-220914/jmeter:slave
           ports:
             - containerPort: 1099
             - containerPort: 50000
@@ -35,9 +35,11 @@ spec:
   ports:
     - port: 1099
       name: server
+      protocol: TCP
       targetPort: 1099
     - port: 50000
       name: local
+      protocol: TCP
       targetPort: 50000
   selector:
     jmeter_mode: slave
