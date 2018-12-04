@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"unsafe"
 )
@@ -8,7 +9,8 @@ import (
 // ExecAfterProcess 実行後処理
 func ExecAfterProcess(outputByte []byte, err error, c chan string) {
 	if err != nil {
-		println("Error.")
+		fmt.Println("Error.")
+		fmt.Println(err)
 		os.Exit(0)
 	}
 

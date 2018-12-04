@@ -19,6 +19,7 @@ spec:
       containers:
         - name: jmslave
           image: gcr.io/develop-220914/jmeter:slave
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 1099
             - containerPort: 50000

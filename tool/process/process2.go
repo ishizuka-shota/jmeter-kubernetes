@@ -34,7 +34,7 @@ func DeleteKubernetesExecEnv() {
 // deleteJmslave jmslave関係削除
 func deleteJmslave(c chan string) {
 	// jmslaveのデプロイメント・サービス削除
-	outputByte, err := exec.Command("kubectl", "delete", "-f", "../jmeter-slave.yaml").Output()
+	outputByte, err := exec.Command("kubectl", "delete", "-f", "../jmeter-slave.yaml").CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
@@ -43,7 +43,7 @@ func deleteJmslave(c chan string) {
 // deleteJmmaster jmmaster関係削除
 func deleteJmmaster(c chan string) {
 	// jmmasterのデプロイメント・サービス削除
-	outputByte, err := exec.Command("kubectl", "delete", "-f", "../jmeter-master.yaml").Output()
+	outputByte, err := exec.Command("kubectl", "delete", "-f", "../jmeter-master.yaml").CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
@@ -59,7 +59,7 @@ func deleteCluster(c chan string) {
 	io.WriteString(stdin, "y")
 	stdin.Close()
 
-	outputByte, err := cmd.Output()
+	outputByte, err := cmd.CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
