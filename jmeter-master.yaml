@@ -19,5 +19,8 @@ spec:
       containers:
         - name: jmmaster
           image: gcr.io/develop-220914/jmeter:master
+          imagePullPolicy: IfNotPresent
+          command: [ "/bin/sh", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]
           ports:
             - containerPort: 60000

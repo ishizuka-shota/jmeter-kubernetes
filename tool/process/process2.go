@@ -16,25 +16,34 @@ const (
 func DeleteKubernetesExecEnv() {
 	c := make(chan string, 2)
 
-	fmt.Println("--------------------deployment・service削除--------------------")
-	// デプロイメント削除
-	go deleteDeploymentAndService(c)
-	// 実行処理演出
-	util.Kurukuru("デプロイメント・サービスを削除中", c)
-	// 処理を止める
-	<-c
+	fmt.Println("--------------------jmslave削除--------------------")
+	go deleteJmslave(c)                       // jmslave削除
+	util.Kurukuru("deployment/service削除中", c) // 実行処理演出
+	<-c                                       // 処理を止める
+
+	fmt.Println("--------------------jmmaster削除--------------------")
+	go deleteJmmaster(c)                      // jmmaster削除
+	util.Kurukuru("deployment/service削除中", c) // 実行処理演出
+	<-c                                       // 処理を止める
 
 	fmt.Println("--------------------cluster削除--------------------")
-	// クラスタ削除
-	go deleteCluster(c)
-	// 実行処理演出
-	util.Kurukuru("クラスタを削除中", c)
+	go deleteCluster(c)         // クラスタ削除
+	util.Kurukuru("クラスタ削除中", c) // 実行処理演出
 }
 
-// deleteDeploymentAndService デプロイメント・サービス削除
-func deleteDeploymentAndService(c chan string) {
-	// デプロイメント・サービス削除
+// deleteJmslave jmslave関係削除
+func deleteJmslave(c chan string) {
+	// jmslaveのデプロイメント・サービス削除
 	outputByte, err := exec.Command("kubectl", "delete", "-f", "../jmeter-slave.yaml").Output()
+
+	// 実行後処理
+	util.ExecAfterProcess(outputByte, err, c)
+}
+
+// deleteJmmaster jmmaster関係削除
+func deleteJmmaster(c chan string) {
+	// jmmasterのデプロイメント・サービス削除
+	outputByte, err := exec.Command("kubectl", "delete", "-f", "../jmeter-master.yaml").Output()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)

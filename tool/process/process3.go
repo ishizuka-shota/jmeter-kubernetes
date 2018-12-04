@@ -11,14 +11,11 @@ import (
 func Execjmeter() {
 	c := make(chan string, 2)
 
-	fmt.Println("--------------------masterPodの選択--------------------")
-	// Pod一覧取得処理
-	go getPods(c)
-	// 実行処理演出
-	util.Kurukuru("Pod一覧を取得中", c)
+	fmt.Println("--------------------select the masterPod--------------------")
+	go getPods(c)                 // Pod一覧取得処理
+	util.Kurukuru("Pod一覧を取得中", c) // 実行処理演出
 
-	// 受信
-	kubePodsString := <-c
+	kubePodsString := <-c // 受信
 
 	// 改行でスライスし、配列の中身がブランクのものをすべて取り除く
 	kubePods := util.GetSliceNotBlank(strings.Split(kubePodsString, "\n"))
@@ -31,17 +28,15 @@ func Execjmeter() {
 	fmt.Println("masterとして使用するPodを選択")
 	podNumber := util.IntStdin()
 
-	fmt.Println("--------------------使用するjmxファイルのコピー--------------------")
+	fmt.Println("--------------------copy jmx file--------------------")
 	fmt.Println("jmxファイルのパスを入力")
 	jmxPath := util.StrStdin()
 
-	// jmxファイルコピー処理
-	go copyjmx(jmxPath, kubePods[podNumber-1], c)
-	util.Kurukuru("jmxファイルをPodへコピーしています", c)
-	// 処理を止める
-	<-c
+	go copyjmx(jmxPath, kubePods[podNumber-1], c) // jmxファイルコピー処理
+	util.Kurukuru("jmxファイルをPodへコピーしています", c)      // 実行処理演出
+	<-c                                           // 処理を止める
 
-	fmt.Println("--------------------jmeter起動--------------------")
+	fmt.Println("--------------------start jmeter--------------------")
 	// jmeter起動
 
 }
@@ -49,7 +44,7 @@ func Execjmeter() {
 // getPods Pod一覧を取得
 func getPods(c chan string) {
 	// Pod一覧を取得(byte配列)
-	outputByte, err := exec.Command("kubectl", "get", "pods", "-o", "custom-columns=:metadata.name", "-n", jmeterSlave).Output()
+	outputByte, err := exec.Command("kubectl", "get", "pods", "-o", "custom-columns=:metadata.name", "-n", jmeterMaster).Output()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
@@ -60,7 +55,7 @@ func copyjmx(path string, kubePod string, c chan string) {
 	kubejmPath := kubePod + ":/jmeter/bin/"
 
 	// jmxファイルをコンテナへコピー
-	outputByte, err := exec.Command("kubectl", "cp", path, kubejmPath, "-n", jmeterSlave).Output()
+	outputByte, err := exec.Command("kubectl", "cp", path, kubejmPath, "-n", jmeterMaster).Output()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
