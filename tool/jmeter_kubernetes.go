@@ -29,4 +29,5 @@ func main() {
 	default:
 		fmt.Println("タスク番号を入力してください")
 	}
+	// kubectl exec -ti -n jmgrafana jmeter-grafana-dep-678c9cdb7c-4hl2g -- curl "http://admin:admin@127.0.0.1:3000/api/datasources" -X POST -H "Content-Type: application/json;charset=UTF-8" --data-binary "{\"name\":\"jmeterdb\",\"type\":\"influxdb\",\"url\":\"http://jmeter-influxdb:8086\",\"access\":\"proxy\",\"isDefault\":true,\"database\":\"jmeter\",\"user\":\"admin\",\"password\":\"admin\"}"
 }

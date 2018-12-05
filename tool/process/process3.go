@@ -43,7 +43,7 @@ func Execjmeter() {
 
 	fmt.Println("--------------------start jmeter--------------------")
 	go func(chan string) {
-		outputByte, err := exec.Command("kubectl", "get", "endpoints", "-o=jsonpath=\"{range .items[*]}{range .subsets[*]}{range .addresses[*]}{.ip}{'\\n'}{end}\"", "-n", jmeterSlave).CombinedOutput()
+		outputByte, err := exec.Command("kubectl", "get", "endpoints", "-o=jsonpath=\"{range .items[*]}{range .subsets[*]}{range .addresses[*]}{.ip}{'\\n'}{end}\"", "-n", util.JmeterSlave).CombinedOutput()
 		util.ExecAfterProcess(outputByte, err, c)
 	}(c)
 	util.Kurukuru("PodのIPを取得しています", c) // 実行処理演出
@@ -63,7 +63,7 @@ func Execjmeter() {
 // getPods Pod一覧を取得
 func getPods(c chan string) {
 	// Pod一覧を取得(byte配列)
-	outputByte, err := exec.Command("kubectl", "get", "pods", "-o", "custom-columns=:metadata.name", "-n", jmeterMaster).CombinedOutput()
+	outputByte, err := exec.Command("kubectl", "get", "pods", "-o", "custom-columns=:metadata.name", "-n", util.JmeterMaster).CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
@@ -75,7 +75,7 @@ func copyjmx(jmxFile string, kubePod string, c chan string) {
 	kubejmPath := kubePod + ":/jmeter/bin/"
 
 	// jmxファイルをコンテナへコピー
-	outputByte, err := exec.Command("kubectl", "cp", jmxPath, kubejmPath, "-n", jmeterMaster).CombinedOutput()
+	outputByte, err := exec.Command("kubectl", "cp", jmxPath, kubejmPath, "-n", util.JmeterMaster).CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
@@ -86,7 +86,7 @@ func startjmeter(jmxFile string, ipList string, kubePod string, c chan string) {
 	jmeterCmd := "\"jmeter -n -t /jmeter/bin/" + jmxFile + ".jmx -l /jmeter/bin/" + jmxFile + ".jtl -R" + ipList + "\""
 
 	// jmeterコマンド
-	cmd := exec.Command("kubectl", "exec", "-n", jmeterMaster, "-i", kubePod, "--", "/bin/sh", "-c", jmeterCmd)
+	cmd := exec.Command("kubectl", "exec", "-n", util.JmeterMaster, "-i", kubePod, "--", "/bin/ash", "-c", jmeterCmd)
 	// jmeter開始
 	runCommand(cmd)
 }

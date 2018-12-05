@@ -17,7 +17,7 @@ func CreateKubernetesExecEnv() {
 	yesOrNo(c)
 
 	fmt.Println("--------------------cluster作成--------------------")
-	fmt.Print("クラスタサイズ入力 >> ")
+	fmt.Print("クラスタサイズ入力(5以上必須) >> ")
 	clusterSize := util.StrStdin()
 	go createCluster(clusterSize, c) // クラスタ作成
 	util.Kurukuru("クラスタ作成中", c)      // 実行処理演出
@@ -33,29 +33,35 @@ func CreateKubernetesExecEnv() {
 	<-c                         // 処理を止める
 
 	fmt.Println("--------------------jmslave作成--------------------")
-	// namespaceを作成
-	go func(chan string) {
-		outputByte, err := exec.Command("kubectl", "create", "namespace", "jmslave").CombinedOutput()
-		util.ExecAfterProcess(outputByte, err, c)
-	}(c)
-	util.Kurukuru("namespace作成中", c) // 実行処理演出
-	<-c                              // 処理を止める
-
-	go createJmslave(c)                       // デプロイメント・サービス作成
-	util.Kurukuru("deployment/service作成中", c) // 実行処理演出
-	<-c                                       // 処理を止める
+	go createNamespace(util.JmeterSlave, c)           // namespaceを作成
+	util.Kurukuru("namespace作成中", c)                  // 実行処理演出
+	<-c                                               // 処理を止める
+	go createDepoymentAndService(util.JmeterSlave, c) // jmslave作成
+	util.Kurukuru("deployment/service作成中", c)         // 実行処理演出
+	<-c                                               // 処理を止める
 
 	fmt.Println("--------------------jmmaster作成--------------------")
-	// namespaceを作成
-	go func(chan string) {
-		outputByte, err := exec.Command("kubectl", "create", "namespace", "jmmaster").CombinedOutput()
-		util.ExecAfterProcess(outputByte, err, c)
-	}(c)
-	util.Kurukuru("namespace作成中", c) // 実行処理演出
-	<-c                              // 処理を止める
+	go createNamespace(util.JmeterMaster, c)           // namespaceを作成
+	util.Kurukuru("namespace作成中", c)                   // 実行処理演出
+	<-c                                                // 処理を止める
+	go createDepoymentAndService(util.JmeterMaster, c) // jmmaster作成
+	util.Kurukuru("deployment/service作成中", c)          // 実行処理演出
+	<-c                                                // 処理を止める
 
-	go createJmmaster(c)                      // デプロイメント・サービス作成
-	util.Kurukuru("deployment/service作成中", c) // 実行処理演出
+	fmt.Println("--------------------jmgrafana作成--------------------")
+	go createNamespace(util.JmeterGrafana, c)           // namespaceを作成
+	util.Kurukuru("namespace作成中", c)                    // 実行処理演出
+	<-c                                                 // 処理を止める
+	go createDepoymentAndService(util.JmeterGrafana, c) // jmgrafana作成
+	util.Kurukuru("deployment/service作成中", c)           // 実行処理演出
+	<-c                                                 // 処理を止める
+
+	fmt.Println("--------------------jminfluxdb作成--------------------")
+	go createNamespace(util.JmeterInfluxdb, c)           // namespaceを作成
+	util.Kurukuru("namespace作成中", c)                     // 実行処理演出
+	<-c                                                  // 処理を止める
+	go createDepoymentAndService(util.JmeterInfluxdb, c) // jminfluxdb作成
+	util.Kurukuru("configmap/deployment/service作成中", c)  // 実行処理演出
 }
 
 // createCluster クラスタ作成
@@ -71,19 +77,21 @@ func createCluster(clusterSize string, c chan string) {
 	util.ExecAfterProcess(outputByte, err, c)
 }
 
-// createJmslave jmslave関係作成
-func createJmslave(c chan string) {
-	// jmslaveのデプロイメント・サービス作成
-	outputByte, err := exec.Command("kubectl", "apply", "-f", "../jmeter-slave.yaml").CombinedOutput()
+// createDepoymentAndService デプロイメント・サービス作成
+func createDepoymentAndService(fileName string, c chan string) {
+	filePath := "../" + fileName + ".yaml"
+
+	// デプロイメント・サービス作成
+	outputByte, err := exec.Command("kubectl", "apply", "-f", filePath).CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
 }
 
-// createJmmaster jmmaster関係作成
-func createJmmaster(c chan string) {
-	// jmslaveのデプロイメント・サービス作成
-	outputByte, err := exec.Command("kubectl", "apply", "-f", "../jmeter-master.yaml").CombinedOutput()
+// createNamespace namespace作成
+func createNamespace(namespace string, c chan string) {
+	// namespace作成
+	outputByte, err := exec.Command("kubectl", "create", "namespace", namespace).CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)

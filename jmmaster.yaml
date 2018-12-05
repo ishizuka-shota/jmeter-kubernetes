@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: jmmaster
-          image: gcr.io/develop-220914/jmeter:master
+          image: lisdar/jmeter-kubernetes:master
           imagePullPolicy: IfNotPresent
           command: [ "/bin/sh", "-c", "--" ]
           args: [ "while true; do sleep 30; done;" ]
