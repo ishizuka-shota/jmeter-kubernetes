@@ -19,7 +19,7 @@ func Kurukuru(text string, c chan string) {
 			break
 		}
 
-		// くるくる
+		// // くるくる
 		fmt.Printf("\r%s %s", text, s.Next())
 		time.Sleep(100 * time.Millisecond)
 	}

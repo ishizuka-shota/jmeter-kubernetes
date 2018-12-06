@@ -46,6 +46,8 @@ func DeleteKubernetesExecEnv() {
 	fmt.Println("--------------------cluster削除--------------------")
 	go deleteCluster(c)         // クラスタ削除
 	util.Kurukuru("クラスタ削除中", c) // 実行処理演出
+
+	close(c) // channelを閉じる
 }
 
 // deleteNamespace namespace削除
@@ -59,7 +61,7 @@ func deleteNamespace(namespace string, c chan string) {
 
 // deleteDeploymentAndService デプロイメント・サービス削除
 func deleteDeploymentAndService(fileName string, c chan string) {
-	filePath := "../" + fileName + ".yaml"
+	filePath := fmt.Sprintf("../%s.yaml", fileName)
 
 	// デプロイメント・サービス削除
 	outputByte, err := exec.Command("kubectl", "delete", "-f", filePath).CombinedOutput()

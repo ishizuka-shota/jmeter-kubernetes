@@ -3,7 +3,6 @@ package process
 import (
 	"fmt"
 	"jmeter-kubernetes/tool/util"
-	"os"
 	"os/exec"
 )
 
@@ -11,10 +10,6 @@ import (
 func CreateKubernetesExecEnv() {
 
 	c := make(chan string, 2)
-
-	fmt.Println("gcloudのゾーン設定をasia-northeast1-a(東京リージョン)に変更する必要があります。")
-	fmt.Print("変更しますか？ (y/n) >> ")
-	yesOrNo(c)
 
 	fmt.Println("--------------------cluster作成--------------------")
 	fmt.Print("クラスタサイズ入力(5以上必須) >> ")
@@ -62,11 +57,13 @@ func CreateKubernetesExecEnv() {
 	<-c                                                  // 処理を止める
 	go createDepoymentAndService(util.JmeterInfluxdb, c) // jminfluxdb作成
 	util.Kurukuru("configmap/deployment/service作成中", c)  // 実行処理演出
+
+	close(c) // channelを閉じる
 }
 
 // createCluster クラスタ作成
 func createCluster(clusterSize string, c chan string) {
-	numNodes := "--num-nodes=" + clusterSize
+	numNodes := fmt.Sprintf("--num-nodes=%s", clusterSize)
 
 	// jmxファイルをコンテナへコピー
 	outputByte, err := exec.Command("gcloud", "container", "clusters", "create", "jmeter", "--preemptible", "--machine-type=g1-small", numNodes,
@@ -79,7 +76,7 @@ func createCluster(clusterSize string, c chan string) {
 
 // createDepoymentAndService デプロイメント・サービス作成
 func createDepoymentAndService(fileName string, c chan string) {
-	filePath := "../" + fileName + ".yaml"
+	filePath := fmt.Sprintf("../%s.yaml", fileName)
 
 	// デプロイメント・サービス作成
 	outputByte, err := exec.Command("kubectl", "apply", "-f", filePath).CombinedOutput()
@@ -95,22 +92,4 @@ func createNamespace(namespace string, c chan string) {
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
-}
-
-func yesOrNo(c chan string) {
-	switch util.StrStdin() {
-	case "y":
-		go func(chan string) {
-			outputByte, err := exec.Command("gcloud", "config", "set", "compute/zone", "asia-northeast1-a").CombinedOutput()
-			util.ExecAfterProcess(outputByte, err, c)
-		}(c)
-		util.Kurukuru("設定の変更中", c) // 実行処理演出
-		<-c                        // 処理を止める
-	case "n":
-		fmt.Println("処理を中断します。")
-		os.Exit(0)
-	default:
-		fmt.Print("yもしくはnを入力してください >> ")
-		yesOrNo(c)
-	}
 }

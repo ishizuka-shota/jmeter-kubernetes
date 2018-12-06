@@ -1,7 +1,10 @@
 package util
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"unsafe"
@@ -34,4 +37,43 @@ func ExecProcess(c chan string, arg ...string) {
 
 	// 実行後処理
 	ExecAfterProcess(outputByte, err, c)
+}
+
+// ExecProcessRealTimeLog プロセス実行処理(リアルタイムなログ)
+func ExecProcessRealTimeLog(cmd *exec.Cmd) {
+	outReader, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(0)
+	}
+	errReader, err := cmd.StderrPipe()
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(0)
+	}
+
+	var bufout, buferr bytes.Buffer
+	outReader2 := io.TeeReader(outReader, &bufout)
+	errReader2 := io.TeeReader(errReader, &buferr)
+
+	if err = cmd.Start(); err != nil {
+		fmt.Print(err)
+		os.Exit(0)
+	}
+
+	go printOutputWithHeader(outReader2)
+	go printOutputWithHeader(errReader2)
+
+	err = cmd.Wait()
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(0)
+	}
+}
+
+func printOutputWithHeader(r io.Reader) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Text())
+	}
 }

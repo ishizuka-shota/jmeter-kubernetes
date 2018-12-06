@@ -6,11 +6,7 @@ import (
 	"jmeter-kubernetes/tool/util"
 )
 
-const (
-	jmeterSlave  = "jmslave"
-	jmeterMaster = "jmmaster"
-)
-
+// main メイン処理
 func main() {
 	// メニュー表示
 	fmt.Println("実施したいタスクを選択")
@@ -30,4 +26,13 @@ func main() {
 		fmt.Println("タスク番号を入力してください")
 	}
 	// kubectl exec -ti -n jmgrafana jmeter-grafana-dep-678c9cdb7c-4hl2g -- curl "http://admin:admin@127.0.0.1:3000/api/datasources" -X POST -H "Content-Type: application/json;charset=UTF-8" --data-binary "{\"name\":\"jmeterdb\",\"type\":\"influxdb\",\"url\":\"http://jmeter-influxdb:8086\",\"access\":\"proxy\",\"isDefault\":true,\"database\":\"jmeter\",\"user\":\"admin\",\"password\":\"admin\"}"
+}
+
+// init 初期処理
+func init() {
+	c := make(chan string, 2)
+
+	util.ChangeComputeZone(c) // ゾーン確認、変更
+
+	close(c) // channelを閉じる
 }
