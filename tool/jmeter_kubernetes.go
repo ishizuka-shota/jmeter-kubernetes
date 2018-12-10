@@ -15,6 +15,8 @@ func main() {
 	fmt.Println("jmeter実行　 [3]")
 	fmt.Print(">> ")
 
+	process.CreateKubernetesExecEnv()
+
 	switch util.StrStdin() {
 	case "1":
 		process.CreateKubernetesExecEnv()

@@ -23,5 +23,6 @@ func GetSliceNotBlank(slice []string) []string {
 			}
 		}
 	}
+
 	return result
 }

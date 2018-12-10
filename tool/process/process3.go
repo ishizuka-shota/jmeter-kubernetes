@@ -12,7 +12,7 @@ func Execjmeter() {
 	c := make(chan string, 2)
 
 	fmt.Println("--------------------select the masterPod--------------------")
-	go getPods(util.JmeterMaster, c)    // MasterPod一覧取得処理
+	go GetPods(util.JmeterMaster, c)    // MasterPod一覧取得処理
 	util.Kurukuru("MasterPod一覧を取得中", c) // 実行処理演出
 
 	kubePodsString := <-c // 受信
@@ -38,7 +38,7 @@ func Execjmeter() {
 	<-c                                        // 処理を止める
 
 	fmt.Println("--------------------start jmeter--------------------")
-	go getPodsIP(util.JmeterSlave, c)     //SlavePodのIP一覧取得
+	go GetPodsIP(util.JmeterSlave, c)     //SlavePodのIP一覧取得
 	util.Kurukuru("SlavePodのIP一覧を取得中", c) // 実行処理演出
 	ipListString := <-c
 
@@ -59,15 +59,6 @@ func Execjmeter() {
 	close(c) // channelを閉じる
 }
 
-// getPods Pod一覧を取得
-func getPods(namespace string, c chan string) {
-	// Pod一覧を取得(byte配列)
-	outputByte, err := exec.Command("kubectl", "get", "pods", "-o", "custom-columns=:metadata.name", "-n", namespace).CombinedOutput()
-
-	// 実行後処理
-	util.ExecAfterProcess(outputByte, err, c)
-}
-
 // copyjmx jmxファイルをコンテナへコピー
 func copyjmx(jmxFile string, kubePod string, c chan string) {
 	jmxPath := fmt.Sprintf("../jmx/%s.jmx", jmxFile)
@@ -75,15 +66,6 @@ func copyjmx(jmxFile string, kubePod string, c chan string) {
 
 	// jmxファイルをコンテナへコピー
 	outputByte, err := exec.Command("kubectl", "cp", jmxPath, kubejmPath, "-n", util.JmeterMaster).CombinedOutput()
-
-	// 実行後処理
-	util.ExecAfterProcess(outputByte, err, c)
-}
-
-// getPodsIP PodのIP一覧を取得
-func getPodsIP(namespace string, c chan string) {
-	// PodのIP一覧を取得(byte配列)
-	outputByte, err := exec.Command("kubectl", "get", "endpoints", "-o=jsonpath=\"{range .items[*]}{range .subsets[*]}{range .addresses[*]}{.ip}{'\\n'}{end}\"", "-n", namespace).CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)

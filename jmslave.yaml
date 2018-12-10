@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       jmeter_mode: slave
-  replicas: 2
+  # replicas: 2
   template:
     metadata:
       namespace: jmslave
