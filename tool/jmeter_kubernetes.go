@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"jmeter-kubernetes/tool/process"
 	"jmeter-kubernetes/tool/util"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"log"
 )
 
 // main メイン処理
 func main() {
+
 	// メニュー表示
 	fmt.Println("実施したいタスクを選択")
 	fmt.Println("cluster作成　[1]")
 	fmt.Println("cluster削除　[2]")
 	fmt.Println("jmeter実行　 [3]")
 	fmt.Print(">> ")
-
-	process.CreateKubernetesExecEnv()
 
 	switch util.StrStdin() {
 	case "1":

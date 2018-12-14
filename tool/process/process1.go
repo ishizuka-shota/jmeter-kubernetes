@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"jmeter-kubernetes/tool/util"
 	"os/exec"
-	"strings"
 )
 
 // CreateKubernetesExecEnv 処理番号1 : kubernetes環境作成
 func CreateKubernetesExecEnv() {
 
 	c := make(chan string, 2)
+
+	fmt.Print("slavepodサイズ入力 >> ")
+	podSize := util.StrStdin()
 
 	fmt.Println("--------------------cluster作成--------------------")
 	go createCluster(c)         // クラスタ作成
@@ -31,8 +33,6 @@ func CreateKubernetesExecEnv() {
 	util.Kurukuru("namespace作成中", c)        // 実行処理演出
 	<-c                                     // 処理を止める
 
-	fmt.Print("slaveサイズ入力 >> ")
-	podSize := util.StrStdin()
 	go CreateDepoymentAndService(util.JmeterSlave, c) // jmslave作成
 	util.Kurukuru("deployment/service作成中", c)         // 実行処理演出
 	<-c                                               // 処理を止める
@@ -49,18 +49,18 @@ func CreateKubernetesExecEnv() {
 	<-c                                                // 処理を止める
 
 	fmt.Println("--------------------jminfluxdb作成--------------------")
-	go CreateNamespace(util.JmeterInfluxdb, c)                     // namespaceを作成
-	util.Kurukuru("namespace作成中", c)                               // 実行処理演出
-	<-c                                                            // 処理を止める
-	go CreateDepoymentAndService(util.JmeterInfluxdb, c)           // jminfluxdb作成
-	util.Kurukuru("deployment/service作成中", c)                      // 実行処理演出
-	<-c                                                            // 処理を止める
-	go GetPods(util.JmeterInfluxdb, c)                             //influxdbのpod取得
-	util.Kurukuru("InfluxdbのPodを取得中", c)                           // 実行処理演出
-	influxdbPod := util.GetSliceNotBlank(strings.Split(<-c, "\n")) // Pod名取得
-	go createDATABASE(influxdbPod[0], c)                           // データベース構築
-	util.Kurukuru("DATABASE構築中", c)                                // 実行処理演出
-	<-c                                                            // 処理を止める
+	go CreateNamespace(util.JmeterInfluxdb, c)           // namespaceを作成
+	util.Kurukuru("namespace作成中", c)                     // 実行処理演出
+	<-c                                                  // 処理を止める
+	go CreateDepoymentAndService(util.JmeterInfluxdb, c) // jminfluxdb作成
+	util.Kurukuru("deployment/service作成中", c)            // 実行処理演出
+	<-c                                                  // 処理を止める
+	// go GetPods(util.JmeterInfluxdb, c)                             //influxdbのpod取得
+	// util.Kurukuru("InfluxdbのPodを取得中", c)                           // 実行処理演出
+	// influxdbPod := util.GetSliceNotBlank(strings.Split(<-c, "\n")) // Pod名取得
+	// go createDATABASE(influxdbPod[0], c)                           // データベース構築
+	// util.Kurukuru("DATABASE構築中", c)                                // 実行処理演出
+	// <-c                                                            // 処理を止める
 
 	fmt.Println("--------------------jmgrafana作成--------------------")
 	go CreateNamespace(util.JmeterGrafana, c)           // namespaceを作成
@@ -76,9 +76,8 @@ func CreateKubernetesExecEnv() {
 // createCluster クラスタ作成
 func createCluster(c chan string) {
 	// jmxファイルをコンテナへコピー
-	outputByte, err := exec.Command("gcloud", "container", "clusters", "create", "jmeter", "--machine-type=n1-highmem-4", "--num-nodes=1",
-		"--disk-size=10", "--zone=asia-northeast1-a", "--enable-basic-auth", "--issue-client-certificate", "--no-enable-ip-alias", "--metadata",
-		"disable-legacy-endpoints=true").CombinedOutput()
+	outputByte, err := exec.Command("gcloud", "container", "clusters", "create", "jmeter", "--machine-type=n1-highmem-4", "--num-nodes=1", "--cluster-version=latest",
+		"--enable-autorepair", "--disk-size=10", "--zone=asia-northeast1-a").CombinedOutput()
 
 	// 実行後処理
 	util.ExecAfterProcess(outputByte, err, c)
